@@ -3,6 +3,7 @@ package co.ghostnotes.trending.main
 import android.content.Intent
 import android.os.AsyncTask
 import android.util.Log
+import co.ghostnotes.trending.R
 import co.ghostnotes.trending.core.executor.PostExecutionThread
 import co.ghostnotes.trending.core.executor.ThreadExecutor
 import co.ghostnotes.trending.data.VideoData
@@ -14,6 +15,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.google.api.client.json.jackson2.JacksonFactory
 import com.google.api.client.util.ExponentialBackOff
 import com.google.api.services.youtube.YouTubeScopes
+import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 
 class MainPresenter @Inject constructor(private val view: MainContract.View): MainContract.Presenter {
@@ -22,19 +24,15 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
     lateinit var navigator: Navigator
 
     @Inject
+    lateinit var googleAccountCredential: GoogleAccountCredential
+    @Inject
     lateinit var youtubeDataSource: YouTubeDataSource
     @Inject
     lateinit var threadExecutor: ThreadExecutor
     @Inject
     lateinit var postExecutionThread: PostExecutionThread
 
-    private lateinit var googleAccountCredential: GoogleAccountCredential
-
-    private fun initializeGoogleAccount() {
-        googleAccountCredential = GoogleAccountCredential
-                .usingOAuth2(view.getContext(), SCOPES)
-                .setBackOff(ExponentialBackOff())
-    }
+    private var selectedAccountName: String? = null
 
     /*
     private fun getResultsFromApi() {
@@ -52,7 +50,7 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
     override fun start() {
         view.hideProgressSpinner()
 
-        initializeGoogleAccount()
+        //initializeGoogleAccount()
         view.chooseGoogleAccount()
 
         // Check Google Service.
@@ -65,10 +63,11 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
     }
 
     override fun stop() {
+        // Do nothing.
     }
 
     override fun setSelectedAccountName(accountName: String) {
-        googleAccountCredential.selectedAccountName = accountName
+        selectedAccountName = accountName
     }
 
     override fun newChooseAccountIntent(): Intent {
@@ -76,70 +75,38 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
     }
 
     override fun getTrendingVideos() {
-        GetTrendingVideosTask(view, googleAccountCredential).execute()
+        view.showProgressSpinner()
+
+        youtubeDataSource.getTrendingVideos(selectedAccountName!!,REGION_CODE_JAPAN, MAX_RESULTS_NUMBER)
+                .subscribeOn(Schedulers.from(threadExecutor))
+                .observeOn(postExecutionThread.getScheduler())
+                .subscribe(this::onTrendingVideosNext, this::onTrendingVideosError)
+    }
+
+    internal fun onTrendingVideosNext(videoDataList: MutableList<VideoData>) {
+        view.setVideoData(videoDataList)
+        view.hideProgressSpinner()
+    }
+
+    internal fun onTrendingVideosError(e: Throwable) {
+        Log.e("TEST", e.message, e)
+
+        if (e is UserRecoverableAuthIOException) {
+            view.requestGoogleAuthorization(e)
+        } else {
+            view.setVideoData(mutableListOf())
+            view.hideProgressSpinner()
+            view.showSnackBar(R.string.error_message_failed_to_get_trending_videos)
+        }
     }
 
     override fun startVideoData(videoData: VideoData) {
         navigator.navigateToYouTube(view.getActivity(), videoData)
     }
 
-    internal class GetTrendingVideosTask(private val view: MainContract.View, credential: GoogleAccountCredential) : AsyncTask<Void, Void, MutableList<VideoData>>() {
-
-        private var youtube: com.google.api.services.youtube.YouTube
-
-        override fun onPreExecute() {
-            view.showProgressSpinner()
-        }
-
-        override fun doInBackground(vararg params: Void?): MutableList<VideoData>? {
-            return try {
-                getTrending()
-            } catch (e: UserRecoverableAuthIOException) {
-                view.requestGoogleAuthorization(e)
-                cancel(true)
-                null
-            }
-        }
-
-        override fun onPostExecute(result: MutableList<VideoData>?) {
-            view.setVideoData(result ?: mutableListOf())
-            view.hideProgressSpinner()
-        }
-
-        private fun getTrending(): MutableList<VideoData> {
-            val result = youtube.videos().list("snippet,contentDetails,statistics")
-                    .setChart(YOUTUBE_CHART_MOST_POPULAR)
-                    .setRegionCode(REGION_CODE_JAPAN)
-                    .setMaxResults(MAX_RESULTS_NUMBER)
-                    .execute()
-
-            val videos = result.items
-            val videoDataList = mutableListOf<VideoData>()
-            videos?.forEach {
-                Log.d("TEST", it.snippet.title)
-                videoDataList.add(VideoData(it))
-            }
-
-            return videoDataList
-        }
-
-        init {
-            val transport = AndroidHttp.newCompatibleTransport()
-            val jsonFactory = JacksonFactory.getDefaultInstance()
-
-            youtube = com.google.api.services.youtube.YouTube.Builder(transport, jsonFactory, credential)
-                    .setApplicationName("YouTube Data API Android Quickstart").build()
-        }
-
-        companion object {
-            private const val YOUTUBE_CHART_MOST_POPULAR = "mostPopular"
-            private const val MAX_RESULTS_NUMBER = 25L
-            private const val REGION_CODE_JAPAN = "JP"
-        }
-    }
-
     companion object {
-        private val SCOPES = listOf(YouTubeScopes.YOUTUBE_READONLY)
+        private const val MAX_RESULTS_NUMBER = 25L
+        private const val REGION_CODE_JAPAN = "JP"
     }
 
 }

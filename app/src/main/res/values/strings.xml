@@ -1,3 +1,8 @@
 <resources>
+
     <string name="app_name">YouTube Trending</string>
+
+    <string name="error_message_failed_to_get_trending_videos">Failed to get trending videos.</string>
+    <string name="error_message_google_play_service_required">This app requires Google Play Services. Please install Google Play Services on your device and relaunch this app.</string>
+
 </resources>

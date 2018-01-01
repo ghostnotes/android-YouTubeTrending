@@ -1,6 +1,7 @@
 package co.ghostnotes.trending.main
 
 import android.content.Intent
+import android.support.annotation.StringRes
 import co.ghostnotes.trending.core.mvp.BasePresenter
 import co.ghostnotes.trending.core.mvp.BaseView
 import co.ghostnotes.trending.data.VideoData
@@ -19,6 +20,10 @@ interface MainContract {
         fun showProgressSpinner()
 
         fun hideProgressSpinner()
+
+        fun showSnackBar(@StringRes resId: Int)
+
+        fun showToast(@StringRes resId: Int)
 
     }
 

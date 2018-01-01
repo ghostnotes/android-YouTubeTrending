@@ -5,6 +5,6 @@ import io.reactivex.Observable
 
 interface YouTubeDataSource {
 
-    fun getTrendingVideos(regionCode: String, maxResultsNumber: Long): Observable<MutableList<VideoData>>
+    fun getTrendingVideos(accountName: String, regionCode: String, maxResultsNumber: Long): Observable<MutableList<VideoData>>
 
 }
