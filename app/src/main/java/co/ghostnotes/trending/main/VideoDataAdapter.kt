@@ -44,6 +44,7 @@ internal class VideoDataAdapter(private val presenter: MainPresenter): RecyclerV
     internal class ViewHolder(private val binding: ListItemVideoBinding): RecyclerView.ViewHolder(binding.root) {
         fun layout(videoData: VideoData) {
             Picasso.with(binding.root.context).load(videoData.thumbnail).into(binding.thumbnail)
+            binding.cardView.setOnClickListener { binding.presenter!!.startVideoData(videoData) }
 
             binding.videoData = videoData
         }
