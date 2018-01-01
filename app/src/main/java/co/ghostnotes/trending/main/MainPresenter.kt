@@ -36,11 +36,32 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
                 .setBackOff(ExponentialBackOff())
     }
 
+    /*
+    private fun getResultsFromApi() {
+        if (!isGooglePlayServicesAvailable()) {
+            acquireGooglePlayServices()
+        } else if (mCredential!!.selectedAccountName == null) {
+            chooseGoogleAccount()
+        } else if (!networkDetail.isDeviceOnline()) {
+            mOutputText.text = "No network connection available."
+        } else {
+            MakeRequestTask(mCredential!!).execute()
+        }
+    }
+    */
     override fun start() {
         view.hideProgressSpinner()
 
         initializeGoogleAccount()
         view.chooseGoogleAccount()
+
+        // Check Google Service.
+
+        // Check permission.
+
+        // Choose Google Account.
+
+        // Get trending videos.
     }
 
     override fun stop() {

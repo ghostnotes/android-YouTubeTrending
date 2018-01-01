@@ -43,8 +43,6 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
 
     private lateinit var networkDetail: NetworkDetail
 
-    //private var mCredential: GoogleAccountCredential? = null
-
     private lateinit var mOutputText: TextView
     private lateinit var mCallApiButton: Button
     private lateinit var mProgress: ProgressDialog
@@ -52,21 +50,12 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
     private lateinit var binding: ActivityMainBinding
     private lateinit var adapter: VideoDataAdapter
 
-    internal class OnVideoRefreshListener(private val swipeRefresh: SwipeRefreshLayout): SwipeRefreshLayout.OnRefreshListener {
-        override fun onRefresh() {
-            Handler().postDelayed({
-                swipeRefresh.isRefreshing = false
-            }, 1000L)
-        }
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
 
         initializeInjector()
         initializeLayout()
-        //initializeGoogleAccountCredential()
 
         presenter.start()
     }
@@ -86,74 +75,12 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
                 .build().inject(this)
     }
 
-    /*
-    private fun initializeGoogleAccountCredential() {
-        // Initialize credentials and service object.
-        mCredential = GoogleAccountCredential
-                .usingOAuth2(applicationContext, SCOPES)
-                .setBackOff(ExponentialBackOff())
-    }
-    */
-
     private fun initializeLayout() {
         adapter = VideoDataAdapter(presenter)
         binding.recyclerView.adapter = adapter
 
         binding.swipeRefresh.setOnRefreshListener(OnVideoRefreshListener(binding.swipeRefresh))
     }
-
-    /*
-    private fun initializeLayout() {
-        val activityLayout = LinearLayout(this)
-        val lp = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT)
-        activityLayout.layoutParams = lp
-        activityLayout.orientation = LinearLayout.VERTICAL
-        activityLayout.setPadding(16, 16, 16, 16)
-
-        val tlp = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT)
-
-        mCallApiButton = Button(this)
-        mCallApiButton.text = BUTTON_TEXT
-        mCallApiButton.setOnClickListener {
-            mCallApiButton.isEnabled = false
-            mOutputText.text = ""
-            getResultsFromApi()
-            mCallApiButton.isEnabled = true
-        }
-        activityLayout.addView(mCallApiButton)
-
-        mOutputText = TextView(this)
-        mOutputText.layoutParams = tlp
-        mOutputText.setPadding(16, 16, 16, 16)
-        mOutputText.isVerticalScrollBarEnabled = true
-        mOutputText.movementMethod = ScrollingMovementMethod()
-        mOutputText.text = "Click the \'${BUTTON_TEXT}\' button to test the API."
-        activityLayout.addView(mOutputText)
-
-        mProgress = ProgressDialog(this)
-        mProgress.setMessage("Calling YouTube Data API ...")
-
-        setContentView(activityLayout)
-    }
-    */
-
-    /*
-    private fun getResultsFromApi() {
-        if (!isGooglePlayServicesAvailable()) {
-            acquireGooglePlayServices()
-        } else if (mCredential!!.selectedAccountName == null) {
-            chooseGoogleAccount()
-        } else if (!networkDetail.isDeviceOnline()) {
-            mOutputText.text = "No network connection available."
-        } else {
-            MakeRequestTask(mCredential!!).execute()
-        }
-    }
-    */
 
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
     override fun chooseGoogleAccount() {
@@ -162,16 +89,10 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
                     .getString(PREF_ACCOUNT_NAME, null)
 
             if (accountName != null) {
-                //mCredential!!.selectedAccountName = accountName
-                //getResultsFromApi()
-
-                // TODO
                 presenter.setSelectedAccountName(accountName)
                 presenter.getTrendingVideos()
             } else {
                 // Start a dialog from which the user can choose an account
-                //startActivityForResult(mCredential!!.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER)
-
                 startActivityForResult(presenter.newChooseAccountIntent(), REQUEST_ACCOUNT_PICKER)
             }
         } else {
@@ -185,7 +106,6 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
     }
 
     override fun requestGoogleAuthorization(exception: UserRecoverableAuthIOException) {
-        //startActivityForResult((mLastError as UserRecoverableAuthIOException).intent, REQUEST_AUTHORIZATION)
         startActivityForResult(exception.intent, REQUEST_AUTHORIZATION)
     }
 
@@ -216,8 +136,6 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
                 if (resultCode != Activity.RESULT_OK) {
                     mOutputText.text = "This app requires Google Play Services. Please install Google Play Services on your device and relaunch this app."
                 } else {
-                    //getResultsFromApi()
-
                     chooseGoogleAccount()
                 }
             }
@@ -230,10 +148,6 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
                         editor.putString(PREF_ACCOUNT_NAME, accountName)
                         editor.apply()
 
-                        //mCredential!!.selectedAccountName = accountName
-                        //getResultsFromApi()
-
-                        // TODO
                         presenter.setSelectedAccountName(accountName)
                         presenter.getTrendingVideos()
                     }
@@ -241,7 +155,6 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
             }
             REQUEST_AUTHORIZATION -> {
                 if (resultCode == Activity.RESULT_OK) {
-                    //getResultsFromApi()
                     chooseGoogleAccount()
                 }
             }
@@ -278,6 +191,7 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
         dialog.show()
     }
 
+    /*
     inner class MakeRequestTask(credential: GoogleAccountCredential) : AsyncTask<Void, Void, ArrayList<String>>() {
         private var mService: com.google.api.services.youtube.YouTube
         private var mLastError: Exception? = null
@@ -381,10 +295,19 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
                     .setApplicationName("YouTube Data API Android Quickstart").build()
         }
     }
+    */
 
     override fun getContext(): Context = applicationContext
 
     override fun getActivity(): Activity = this
+
+    internal class OnVideoRefreshListener(private val swipeRefresh: SwipeRefreshLayout): SwipeRefreshLayout.OnRefreshListener {
+        override fun onRefresh() {
+            Handler().postDelayed({
+                swipeRefresh.isRefreshing = false
+            }, 1000L)
+        }
+    }
 
     companion object {
         private const val REQUEST_ACCOUNT_PICKER = 1000

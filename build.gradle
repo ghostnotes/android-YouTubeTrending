@@ -34,10 +34,13 @@ ext {
     buildToolsVersion = '26.0.2'
 
     // Application
-    supportLibraryVersion = '26.1.0'
+    //supportLibraryVersion = '26.1.0'
+    supportLibraryVersion = '27.0.2'
     constraintLayoutVersion = '1.0.2'
     dagger2Version = '2.13'
     jsr250ApiVersion = '1.0'
+    databindingCompilerVersion = '3.0.1'
+    picassoVersion = '2.5.2'
 
     // Test
     junitVersion = '4.12'

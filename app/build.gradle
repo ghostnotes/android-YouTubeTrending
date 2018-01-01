@@ -16,6 +16,8 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode VERSION_CODE
         versionName VERSION_NAME
+        multiDexEnabled true
+
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -61,10 +63,10 @@ dependencies {
     implementation "com.android.support:recyclerview-v7:$rootProject.supportLibraryVersion"
     implementation "com.android.support:cardview-v7:$rootProject.supportLibraryVersion"
     implementation "com.android.support.constraint:constraint-layout:$rootProject.constraintLayoutVersion"
-    kapt "com.android.databinding:compiler:3.0.1"
+    kapt "com.android.databinding:compiler:$rootProject.databindingCompilerVersion"
 
     // Picasso
-    implementation "com.squareup.picasso:picasso:2.5.2"
+    implementation "com.squareup.picasso:picasso:$rootProject.picassoVersion"
 
     // YouTube
     implementation "com.google.android.gms:play-services-auth:11.8.0"
