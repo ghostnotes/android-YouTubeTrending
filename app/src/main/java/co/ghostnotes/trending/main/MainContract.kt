@@ -17,6 +17,8 @@ interface MainContract {
 
         fun setVideoData(videoDataList: MutableList<VideoData>)
 
+        fun setRefreshing(refreshing: Boolean)
+
         fun showProgressSpinner()
 
         fun hideProgressSpinner()
@@ -34,6 +36,8 @@ interface MainContract {
         fun newChooseAccountIntent(): Intent
 
         fun getTrendingVideos()
+
+        fun refreshTrendingVideos()
 
         fun startVideoData(video: VideoData)
 

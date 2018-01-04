@@ -73,7 +73,7 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
         adapter = VideoDataAdapter(presenter)
         binding.recyclerView.adapter = adapter
 
-        binding.swipeRefresh.setOnRefreshListener(OnVideoRefreshListener(binding.swipeRefresh))
+        binding.swipeRefresh.setOnRefreshListener(OnVideoRefreshListener(presenter))
     }
 
     @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
@@ -197,11 +197,13 @@ class MainActivity : AppCompatActivity(), MainContract.View, EasyPermissions.Per
 
     override fun getActivity(): Activity = this
 
-    internal class OnVideoRefreshListener(private val swipeRefresh: SwipeRefreshLayout): SwipeRefreshLayout.OnRefreshListener {
+    override fun setRefreshing(refreshing: Boolean) {
+        binding.swipeRefresh.isRefreshing = refreshing
+    }
+
+    internal class OnVideoRefreshListener(private val presenter: MainPresenter): SwipeRefreshLayout.OnRefreshListener {
         override fun onRefresh() {
-            Handler().postDelayed({
-                swipeRefresh.isRefreshing = false
-            }, 1000L)
+            presenter.refreshTrendingVideos()
         }
     }
 

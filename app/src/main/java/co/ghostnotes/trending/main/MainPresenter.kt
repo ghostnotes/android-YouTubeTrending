@@ -50,7 +50,6 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
     override fun start() {
         view.hideProgressSpinner()
 
-        //initializeGoogleAccount()
         view.chooseGoogleAccount()
 
         // Check Google Service.
@@ -77,6 +76,14 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
     override fun getTrendingVideos() {
         view.showProgressSpinner()
 
+        getTrendingVideosInternal()
+    }
+
+    override fun refreshTrendingVideos() {
+        getTrendingVideosInternal()
+    }
+
+    private fun getTrendingVideosInternal() {
         youtubeDataSource.getTrendingVideos(selectedAccountName!!,REGION_CODE_JAPAN, MAX_RESULTS_NUMBER)
                 .subscribeOn(Schedulers.from(threadExecutor))
                 .observeOn(postExecutionThread.getScheduler())
@@ -85,6 +92,7 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
 
     internal fun onTrendingVideosNext(videoDataList: MutableList<VideoData>) {
         view.setVideoData(videoDataList)
+        view.setRefreshing(false)
         view.hideProgressSpinner()
     }
 
@@ -95,9 +103,11 @@ class MainPresenter @Inject constructor(private val view: MainContract.View): Ma
             view.requestGoogleAuthorization(e)
         } else {
             view.setVideoData(mutableListOf())
-            view.hideProgressSpinner()
             view.showSnackBar(R.string.error_message_failed_to_get_trending_videos)
         }
+
+        view.hideProgressSpinner()
+        view.setRefreshing(false)
     }
 
     override fun startVideoData(videoData: VideoData) {
