@@ -4,9 +4,9 @@
 ```
 storeFile=../trending.jks
 storePassword=*****
-keyAlias=spicii
+keyAlias=trending
 keyPassword=*****
-copyApkToDir=/Users/XXXXX/Documents/apk/YouTubeTrending
+copyApkToDir=/Users/XXXXX/Documents/apk/android-YouTubeTrending
 ```
 
 ## Release log
